@@ -3,7 +3,7 @@ package ma.moteur.oumast.oumast;
 import java.io.Serializable;
 
 /**
- * Created by poste05 on 02/03/2018.
+ * Created by Mohamed Oumast on 02/03/2018.
  */
 
 public class SmsObject implements Serializable{
