@@ -12,24 +12,22 @@ import android.telephony.SmsMessage;
  */
 
 public class ReceiveMessage extends BroadcastReceiver {
-    final SmsManager mysms = SmsManager.getDefault();
     public void onReceive(Context context, Intent intent) {
-        Bundle mybundle =intent.getExtras();
-        try {
-            if(mybundle != null){
-                final Object[] messageContent =(Object[]) mybundle.get("pdus");
-                for (int i = 0; i <messageContent.length; i++){
-                    SmsMessage mynewsms = SmsMessage.createFromPdu((byte[]) messageContent[i]);
-                   //
-                    String s = mynewsms.getDisplayOriginatingAddress();
-                    String s1 = mynewsms.getDisplayMessageBody();
-                    intent.putExtra("num1", s);
-                    intent.putExtra("msg1", s1);
-                    context.startActivity(intent);
-                }
-            }
-        }catch (Exception e){
+        Bundle mesaj = intent.getExtras();
+        SmsMessage[] smsMessage = null;
+        String msj = "";
 
+        if(mesaj!= null){
+            Object[] pdus = (Object[])mesaj.get("pdus");
+            smsMessage = new SmsMessage[pdus.length];
+            for(int i = 0; i < pdus.length; i++){
+                smsMessage[i] = SmsMessage.createFromPdu((byte[])pdus[i]);
+                msj = smsMessage[i].getDisplayOriginatingAddress();
+            }
+
+            Intent mIntent = new Intent(context, MainActivity.class);
+            mIntent.putExtra("sms", msj);
+            context.startActivity(mIntent);
         }
     }
 }

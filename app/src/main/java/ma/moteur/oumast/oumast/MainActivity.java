@@ -34,22 +34,82 @@ public class MainActivity extends AppCompatActivity {
     private TelephonyManager mTelephonyManager;
     private static  String phone=null, message=null, id=null, imeistring=null;
     private static int i=0;
-    private static boolean bool = true;
+   // private static boolean bool = true;
     TextView textViewAff, textViewA;
-    public boolean good=false;
-    Intent in;
+    public boolean good=false, syncs=true;
+    ConnectionDetector cd;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         textViewAff = (TextView) findViewById(R.id.textView8);
         textViewA = (TextView) findViewById(R.id.textViewId);
-        in = getIntent();
-    }
+        cd = new ConnectionDetector(this);
+        /*Thread t = new Thread(new Runnable() {
+            public void run() {
+                int numb=0;
+                try{
 
+                }catch (Exception ex){
+                    numb = Integer.parseInt(getIntent().getStringExtra("sms"));
+                }
+
+                if(numb == 555){
+                    Intent o = new Intent(getApplicationContext(), BalanceActivity.class);
+                    startActivity(o);
+                }else {
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        t.start();*/
+
+        /*Thread net = new Thread(new Runnable() {
+            public void run() {
+                /*
+                // Seba7 lkhir si mohamed ini bessmi allah,
+                // ghadi ikhessni n dir syncronisation bin onInBackground o had thred bash ila kan problem t connection yegfo o isifto l la page d error
+                if(syncs == false) {
+                    bool=false;
+                    Intent oms = new Intent(getApplicationContext(), NetworkActivity.class);
+                    startActivity(oms);
+                }else {
+                    bool=true;
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        });
+
+        net.start();
+        */
+    }
+    public void to(){
+        Intent oms = new Intent(getApplicationContext(), NetworkActivity.class);
+        startActivity(oms);
+    }
+    public void CheckConnection(){
+        if(!cd.isConnected()){
+
+            syncs = false;
+        }else {
+            syncs = true;
+        }
+    }
     @Override
     protected void onStart(){
         super.onStart();
+
     }
     @Override
     protected void onResume() {
@@ -58,13 +118,7 @@ public class MainActivity extends AppCompatActivity {
         newThread();
     }
     public void newThread(){
-        String num1 = in.getStringExtra("num1");
-        String msg1 = in.getStringExtra("msg1");
-        if(!num1.isEmpty()){
-        Intent it = new Intent(getApplicationContext(), BalanceActivity.class);
-        startActivity(it);
-        }
-        new  MyAsyncTaskgetNews().execute("");
+            new MyAsyncTaskgetNews().execute("");
     }
     public static String msg="";
     public void sendSMSMessage() {
@@ -88,9 +142,14 @@ public class MainActivity extends AppCompatActivity {
             case MY_PERMISSIONS_REQUEST_SEND_SMS: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    SmsManager smsManager = SmsManager.getDefault();
-                    smsManager.sendTextMessage(phone, null, message, null, null);
-                    i=1;
+                    if(syncs = true){
+                        SmsManager smsManager = SmsManager.getDefault();
+                        smsManager.sendTextMessage(phone, null, message, null, null);
+                        i=1;
+                    }else {
+                        i=0;
+                    }
+
                 } else {
                     i=0;
                 }
@@ -110,8 +169,8 @@ public class MainActivity extends AppCompatActivity {
             this.startService(new Intent(this, MyAsyncTaskgetNews.class));
         }
         try {
-            if(i ==1 || i == 0){
-                URL url = new URL("http://192.168.1.71/sms/receve.php?id="+id+"&etat"+i);
+            if((i ==1 || i == 0) && syncs == true ){
+                URL url = new URL("http://192.168.1.69/sms/receve.php?id="+id+"&etat"+i);
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 msg="tsaft l receve l etat :"+i;
             }
@@ -137,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
             StringBuilder reponseHTTP = new StringBuilder();
             HttpClient client = new DefaultHttpClient();
             HttpGet httpGet = new HttpGet
-                    ("http://192.168.1.71/sms/sms.php?DEVICE_ID="+imeistring);
+                    ("http://192.168.1.69/sms/sms.php?DEVICE_ID="+imeistring);
             try{
                 publishProgress("try{ doInBackground :4" );
                 if(httpGet != null) {
@@ -162,30 +221,36 @@ public class MainActivity extends AppCompatActivity {
                             if (!id.isEmpty()) {
                                 publishProgress("ghadi isift");
                                 publishProgress("9bel send " + msg);
+                                CheckConnection();
                                 sendSMSMessage();
                                 publishProgress("be3d send " + msg);
                                 good=true;
                                 return "send";
                             } else {
+                                syncs=false;
                                 publishProgress("majebt walo");
                                 return null;
                             }
                         } else {
+                            syncs=false;
                             publishProgress("ma9dertsh c:" + statusCode);
                             return null;
                         }
                     }else{
+                        syncs=false;
                         publishProgress("response is null");
                         return null;
                     }
                 }else {
+                    syncs=false;
                     publishProgress("httpGet is null" );
                     return null;
                 }
             }catch (Exception e){
-                publishProgress("catch e:"+e.getMessage() );
+                syncs=false;
+                publishProgress("catch e:"+e.getMessage());
+                to();
                 return null;
-
             }
         }
         protected void onProgressUpdate(String... progress) {

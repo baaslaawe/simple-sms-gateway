@@ -20,17 +20,17 @@ public class BalanceActivity extends AppCompatActivity {
         b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                refresh();
+                //refresh();
             }
         });
 
     }
-    public void refresh(){
+    /*public void refresh(){
         Intent in = getIntent();
         String num = in.getStringExtra("num1");
-        if(!num.isEmpty()){
+        if(num.equals("555")){
             Intent it = new Intent(getApplicationContext(), MainActivity.class);
             startActivity(it);
         }
-    }
+    }*/
 }
